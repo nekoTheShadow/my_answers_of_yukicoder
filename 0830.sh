@@ -1,0 +1,1 @@
+read n;echo $((n*10))
