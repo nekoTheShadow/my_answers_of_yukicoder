@@ -1,0 +1,7 @@
+[package]
+name = "_0837"
+version = "0.1.0"
+authors = ["nekoTheShadow <h.nakamura0903@gmail.com>"]
+edition = "2018"
+
+[dependencies]
