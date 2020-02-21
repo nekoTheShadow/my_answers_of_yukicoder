@@ -1,0 +1,1 @@
+sed s/ao/ki/g
