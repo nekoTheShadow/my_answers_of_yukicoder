@@ -1,18 +1,120 @@
+package yukicoder._0807;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.PriorityQueue;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Main {
     public void exec() {
+        int n = stdin.nextInt();
+        int m = stdin.nextInt();
+        Dijkstra2 dijkstra2 = new Dijkstra2(n);
+        for (int i = 0; i < m; i++) {
+            int a = stdin.nextInt() - 1;
+            int b = stdin.nextInt() - 1;
+            long c = stdin.nextLong();
+            dijkstra2.add(a, b, c);
+            dijkstra2.add(b, a, c);
+        }
+        long[] result = dijkstra2.run(0);
+        for (int i = 0; i < n; i++) {
+            stdout.println(result[i]);
+        }
     }
 
-    private static final Stdin stdin = new Stdin(System.in);
-    private static final Stdout stdout = new Stdout();
+    public class Dijkstra2 {
+        private int n;
+        private Map<Integer, List<Edge>> edges;
+
+        public Dijkstra2(int n) {
+            this.n = n;
+            this.edges = new HashMap<>();
+        }
+
+        public void add(int from, int to, long cost) {
+            this.edges.computeIfAbsent(from, unused -> new ArrayList<>()).add(new Edge(to, cost));
+        }
+
+        public long[] run(int start) {
+            long[] score1 = new long[n];
+            long[] score2 = new long[n];
+            Arrays.fill(score1, Long.MAX_VALUE);
+            Arrays.fill(score2, Long.MAX_VALUE);
+            score1[start] = 0;
+            score2[start] = 0;
+
+            PriorityQueue<Tuple> q = new PriorityQueue<>();
+            q.add(new Tuple(start, 0, false));
+            q.add(new Tuple(start, 0, true));
+            while (!q.isEmpty()) {
+                Tuple t = q.remove();
+                if (!edges.containsKey(t.current)) continue;
+                if (!t.used && score1[t.current] < t.cost) continue;
+                if (t.used && score2[t.current] < t.cost) continue;
+
+                for (Edge edge : edges.get(t.current)) {
+                    if (t.used) {
+                        if (t.cost + edge.cost < score2[edge.next]) {
+                            score2[edge.next] = t.cost + edge.cost;
+                            q.add(new Tuple(edge.next, score2[edge.next], true));
+                        }
+                    } else {
+                        if (t.cost + edge.cost < score1[edge.next]) {
+                            score1[edge.next] = t.cost + edge.cost;
+                            q.add(new Tuple(edge.next, score1[edge.next], false));
+                        }
+                        if (t.cost < score2[edge.next]) {
+                            score2[edge.next] = t.cost;
+                            q.add(new Tuple(edge.next, score2[edge.next], true));
+                        }
+                    }
+                }
+            }
+
+            return IntStream.range(0, n).mapToLong(i -> score1[i]+score2[i]).toArray();
+        }
+
+        private class Edge {
+            private int next;
+            private long cost;
+
+            public Edge(int next, long cost) {
+                this.next = next;
+                this.cost = cost;
+            }
+        }
+
+        private class Tuple implements Comparable<Tuple>{
+            private int current;
+            private long cost;
+            private boolean used;
+
+            public Tuple(int current, long cost, boolean used) {
+                this.current = current;
+                this.cost = cost;
+                this.used = used;
+            }
+
+            @Override
+            public int compareTo(Tuple other) {
+                return Long.compare(this.cost, other.cost);
+            }
+        }
+    }
+
+    private static Stdin stdin = new Stdin(System.in);
+    private static Stdout stdout = new Stdout();
 
     public static void main(String[] args) {
         try {
