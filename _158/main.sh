@@ -1,0 +1,1 @@
+read N K;seq $N|factor|awk -vK=$K '{c=0;for(i=1;++i<=NF;)if(p!=$i){c++;p=$i};if(c>=K)print}'|wc -l
